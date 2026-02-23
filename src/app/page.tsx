@@ -18,7 +18,11 @@ export default function HomePage() {
               <Button asChild className="bg-cyan-500 text-slate-950 hover:bg-cyan-400">
                 <a href={echoBootcampHref}>Launch Echo Bootcamp</a>
               </Button>
-              <Button asChild variant="outline" className="border-white/20 bg-black/20">
+              <Button
+                asChild
+                variant="outline"
+                className="border-white/25 bg-black/20 text-zinc-100 hover:border-cyan-300/60 hover:bg-cyan-500/20 hover:text-cyan-100"
+              >
                 <a href="https://www.thegoofytrooper.com" target="_blank" rel="noreferrer">
                   Visit The Goofy Trooper
                 </a>
@@ -59,7 +63,7 @@ export default function HomePage() {
             <p className="text-sm text-muted-foreground">
               Disney day-planning platform with practical park tools and dashboards.
             </p>
-            <Button asChild size="sm" variant="outline" className="border-white/20 bg-transparent">
+            <Button asChild size="sm" className="bg-cyan-500 text-slate-950 hover:bg-cyan-400">
               <a href="https://www.thegoofytrooper.com" target="_blank" rel="noreferrer">
                 Open The Goofy Trooper
               </a>
@@ -68,7 +72,7 @@ export default function HomePage() {
         </Card>
       </section>
 
-      <section className="grid gap-6 rounded-3xl border border-white/12 bg-card/60 p-6 md:grid-cols-2">
+      <section className="grid gap-6 rounded-3xl border border-white/12 bg-card/60 p-6">
         <div className="space-y-3">
           <h2 className="text-2xl font-semibold tracking-tight">About</h2>
           {siteContent.meta.about.map((line) => (
@@ -76,19 +80,6 @@ export default function HomePage() {
               {line}
             </p>
           ))}
-        </div>
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Get in touch</h3>
-          <Button asChild className="bg-blue-600 text-white hover:bg-blue-500">
-            <a href={siteContent.meta.contact.email}>Email me</a>
-          </Button>
-          <div className="flex flex-wrap gap-2">
-            {siteContent.meta.contact.socials.map((social) => (
-              <Button key={social.label} asChild variant="outline" className="border-white/15 bg-transparent">
-                <a href={social.href}>{social.label}</a>
-              </Button>
-            ))}
-          </div>
         </div>
       </section>
     </div>
