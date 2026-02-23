@@ -76,8 +76,12 @@ jobs:
       - name: Deploy on VPS
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/vps_key -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" <<'EOF_REMOTE'
+          ssh -i ~/.ssh/vps_key -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- '$DEPLOY_APP_PATH' '$DEPLOY_APP_PORT' '$DEPLOY_APP_NAME'" <<'EOF_REMOTE'
           set -euxo pipefail
+          DEPLOY_APP_PATH="$1"
+          DEPLOY_APP_PORT="$2"
+          DEPLOY_APP_NAME="$3"
+
           mkdir -p "$DEPLOY_APP_PATH"
           cd "$DEPLOY_APP_PATH"
 
