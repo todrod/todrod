@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
-import { cathBootcampHref, echoBootcampHref } from "@/lib/urls";
+import { cathBootcampHref, echoBootcampHref, tcaLabHref } from "@/lib/urls";
 
 export default function HomePage() {
   return (
@@ -20,6 +20,9 @@ export default function HomePage() {
               </Button>
               <Button asChild className="bg-cyan-500 text-slate-950 hover:bg-cyan-400">
                 <a href={cathBootcampHref}>Launch Cath Lab Bootcamp</a>
+              </Button>
+              <Button asChild className="bg-cyan-500 text-slate-950 hover:bg-cyan-400">
+                <a href={tcaLabHref}>Open TCA Lab Site</a>
               </Button>
               <Button
                 asChild
