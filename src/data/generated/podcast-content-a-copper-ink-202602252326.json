@@ -1,0 +1,29 @@
+{
+  "slug": "podcast-content-a-copper-ink-202602252326",
+  "createdAt": "2026-02-26T04:26:45.034Z",
+  "selection": {
+    "paletteId": "copper-ink",
+    "layoutId": "content-a",
+    "goalId": "podcast"
+  },
+  "sections": [
+    {
+      "sectionId": "hero"
+    },
+    {
+      "sectionId": "episode-list"
+    },
+    {
+      "sectionId": "episode-detail"
+    },
+    {
+      "sectionId": "subscribe-cta"
+    },
+    {
+      "sectionId": "newsletter"
+    },
+    {
+      "sectionId": "about-host"
+    }
+  ]
+}

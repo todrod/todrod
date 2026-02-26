@@ -1,0 +1,34 @@
+{
+  "templates": [
+    {
+      "slug": "podcast-landing-a-ocean-depth-202602260000",
+      "createdAt": "2026-02-26T05:00:12.512Z",
+      "paletteId": "ocean-depth",
+      "paletteName": "Ocean Depth",
+      "layoutId": "landing-a",
+      "layoutName": "Landing A",
+      "goalId": "podcast",
+      "goalLabel": "Podcast"
+    },
+    {
+      "slug": "blog-docs-docs-a-cobalt-paper-202602252340",
+      "createdAt": "2026-02-26T04:40:41.148Z",
+      "paletteId": "cobalt-paper",
+      "paletteName": "Cobalt Paper",
+      "layoutId": "docs-a",
+      "layoutName": "Docs A",
+      "goalId": "blog-docs",
+      "goalLabel": "Blog / Docs"
+    },
+    {
+      "slug": "podcast-content-a-copper-ink-202602252326",
+      "createdAt": "2026-02-26T04:26:45.034Z",
+      "paletteId": "copper-ink",
+      "paletteName": "Copper Ink",
+      "layoutId": "content-a",
+      "layoutName": "Content A",
+      "goalId": "podcast",
+      "goalLabel": "Podcast"
+    }
+  ]
+}

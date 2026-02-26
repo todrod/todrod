@@ -6,3 +6,6 @@ export const cathBootcampHref =
 
 export const tcaLabHref =
   process.env.NEXT_PUBLIC_TCA_LAB_URL ?? "https://lab.todrod.com/tca";
+
+export const templateBuilderHref =
+  process.env.NEXT_PUBLIC_TEMPLATE_BUILDER_URL ?? "https://www.todrod.com/lab/template-builder";

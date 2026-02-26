@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
@@ -18,6 +19,41 @@ export default function LabPage() {
         <h1 className="text-3xl font-semibold tracking-tight">The Lab</h1>
         <p className="text-muted-foreground">Small experiments and prototypes I use to test ideas quickly.</p>
       </header>
+
+      <Card className="border-cyan-300/40 bg-cyan-500/10">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-base">Template Builder</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Visually pick palette, layout, and project goal, then generate reusable starter templates.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/lab/template-builder" className="rounded-md bg-cyan-400 px-3 py-2 text-sm font-semibold text-black hover:opacity-90">
+              Open Builder
+            </Link>
+            <Link href="/lab/template-builder/gallery" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-cyan-300/60">
+              View Gallery
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-red-300/40 bg-red-500/10">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-base">Heart to Heart with Dr. Hadi</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Mobile-first podcast landing page concept for “Protecting the Pump.”
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/lab/heart-to-heart" className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400">
+              Open Podcast Prototype
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         {lab.map((item) => (

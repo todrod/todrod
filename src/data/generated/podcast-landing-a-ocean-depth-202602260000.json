@@ -1,0 +1,29 @@
+{
+  "slug": "podcast-landing-a-ocean-depth-202602260000",
+  "createdAt": "2026-02-26T05:00:12.512Z",
+  "selection": {
+    "paletteId": "ocean-depth",
+    "layoutId": "landing-a",
+    "goalId": "podcast"
+  },
+  "sections": [
+    {
+      "sectionId": "hero"
+    },
+    {
+      "sectionId": "episode-list"
+    },
+    {
+      "sectionId": "episode-detail"
+    },
+    {
+      "sectionId": "subscribe-cta"
+    },
+    {
+      "sectionId": "newsletter"
+    },
+    {
+      "sectionId": "about-host"
+    }
+  ]
+}

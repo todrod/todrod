@@ -1,0 +1,26 @@
+{
+  "slug": "blog-docs-docs-a-cobalt-paper-202602252340",
+  "createdAt": "2026-02-26T04:40:41.148Z",
+  "selection": {
+    "paletteId": "cobalt-paper",
+    "layoutId": "docs-a",
+    "goalId": "blog-docs"
+  },
+  "sections": [
+    {
+      "sectionId": "hero"
+    },
+    {
+      "sectionId": "docs-shell"
+    },
+    {
+      "sectionId": "blog-article"
+    },
+    {
+      "sectionId": "docs"
+    },
+    {
+      "sectionId": "contact"
+    }
+  ]
+}

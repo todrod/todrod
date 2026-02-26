@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,9 @@ export default function HomePage() {
               </Button>
               <Button asChild className="bg-cyan-500 text-slate-950 hover:bg-cyan-400">
                 <a href={tcaLabHref}>Open TCA Lab Site</a>
+              </Button>
+              <Button asChild className="bg-violet-400 text-slate-950 hover:bg-violet-300">
+                <Link href="/lab/template-builder">Enter The Pixel Playground</Link>
               </Button>
               <Button
                 asChild
