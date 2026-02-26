@@ -9,3 +9,6 @@ export const tcaLabHref =
 
 export const templateBuilderHref =
   process.env.NEXT_PUBLIC_TEMPLATE_BUILDER_URL ?? "https://www.todrod.com/lab/template-builder";
+
+export const heartToHeartHref =
+  process.env.NEXT_PUBLIC_HEART_TO_HEART_URL ?? "https://www.todrod.com/lab/heart-to-heart";

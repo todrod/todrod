@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
-import { cathBootcampHref, echoBootcampHref, tcaLabHref } from "@/lib/urls";
+import { cathBootcampHref, echoBootcampHref, heartToHeartHref, tcaLabHref } from "@/lib/urls";
 
 export default function HomePage() {
   return (
@@ -27,6 +27,9 @@ export default function HomePage() {
               </Button>
               <Button asChild className="bg-violet-400 text-slate-950 hover:bg-violet-300">
                 <Link href="/lab/template-builder">Enter The Pixel Playground</Link>
+              </Button>
+              <Button asChild className="bg-rose-400 text-slate-950 hover:bg-rose-300">
+                <a href={heartToHeartHref}>Tune In: Heart-to-Heart</a>
               </Button>
               <Button
                 asChild
