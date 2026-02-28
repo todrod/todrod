@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { formatDate } from "@/lib/site-utils";
+import { festivalAppHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -55,6 +56,25 @@ export default function LabPage() {
         </CardContent>
       </Card>
 
+      <Card className="border-pink-300/40 bg-pink-500/10">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-base">Festival App Workflow</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Working runbook for volunteer intake, auto-assignment, admin review, and day-of staffing execution.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/lab/festival-workflow" className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
+              Open Workflow
+            </Link>
+            <a href={festivalAppHref} target="_blank" rel="noreferrer" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
+              Open Festival App
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2">
         {lab.map((item) => (
           <Card key={`${item.title}-${item.date}`} className="border-white/10 bg-card/70">
@@ -73,6 +93,14 @@ export default function LabPage() {
                   </Badge>
                 ))}
               </div>
+              {item.link ? (
+                <Link
+                  href={item.link}
+                  className="inline-flex rounded-md border border-white/20 px-3 py-1.5 text-xs hover:border-cyan-300/60"
+                >
+                  Open
+                </Link>
+              ) : null}
             </CardContent>
           </Card>
         ))}

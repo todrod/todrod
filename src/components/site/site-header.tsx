@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { echoBootcampHref } from "@/lib/urls";
+import { echoBootcampHref, festivalAppHref } from "@/lib/urls";
 
 export function SiteHeader() {
   return (
@@ -16,6 +16,13 @@ export function SiteHeader() {
             className="bg-cyan-500 text-slate-950 shadow-[0_0_18px_rgba(6,182,212,0.45)] transition hover:bg-cyan-400"
           >
             <a href={echoBootcampHref}>Echo Bootcamp</a>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            className="bg-rose-400 text-slate-950 shadow-[0_0_18px_rgba(251,113,133,0.4)] transition hover:bg-rose-300"
+          >
+            <a href={festivalAppHref}>Festival App</a>
           </Button>
           <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
             <a href="https://www.thegoofytrooper.com" target="_blank" rel="noreferrer">

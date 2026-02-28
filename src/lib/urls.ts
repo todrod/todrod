@@ -12,3 +12,9 @@ export const templateBuilderHref =
 
 export const heartToHeartHref =
   process.env.NEXT_PUBLIC_HEART_TO_HEART_URL ?? "https://www.todrod.com/lab/heart-to-heart";
+
+export const festivalAppHref =
+  process.env.NEXT_PUBLIC_FESTIVAL_APP_URL ?? "https://festivalapp.todrod.com";
+
+export const festivalAppRepoHref =
+  process.env.NEXT_PUBLIC_FESTIVAL_APP_REPO_URL ?? "https://github.com/todrod/festivalapp";
