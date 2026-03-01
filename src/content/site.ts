@@ -128,13 +128,6 @@ export const siteContent = {
   ] satisfies Project[],
   lab: [
     {
-      title: "Festival App Workflow",
-      description: "Operational flow for volunteer intake, admin scheduling, assignment review, and day-of execution.",
-      tags: ["Scheduling", "Workflow", "Operations"],
-      date: "2026-02-28",
-      link: "/lab/festival-workflow",
-    },
-    {
       title: "Prompt Compression Tests",
       description: "Comparing long vs constrained prompts for consistent output quality.",
       tags: ["LLM", "Prompting"],

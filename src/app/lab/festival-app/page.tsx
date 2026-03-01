@@ -29,9 +29,6 @@ export default function FestivalAppPage() {
           St. Clement Strawberry Festival volunteer scheduler workspace.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link href="/lab/festival-workflow" className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
-            Open Workflow
-          </Link>
           <a href={festivalAppRepoHref} target="_blank" rel="noreferrer" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
             Open GitHub Repo
           </a>

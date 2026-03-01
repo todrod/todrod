@@ -57,17 +57,14 @@ export default function LabPage() {
 
       <Card className="border-pink-300/40 bg-pink-500/10">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-base">Festival App Workflow</CardTitle>
+          <CardTitle className="text-base">Festival App</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Working runbook for volunteer intake, auto-assignment, admin review, and day-of staffing execution.
+            Volunteer intake and admin scheduling system for St. Clement Strawberry Festival.
           </p>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Link href="/lab/festival-workflow" className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
-              Open Workflow
-            </Link>
-            <Link href="/lab/festival-app" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
+            <Link href="/lab/festival-app" className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
               Open Festival App
             </Link>
           </div>
@@ -92,7 +89,7 @@ export default function LabPage() {
                   </Badge>
                 ))}
               </div>
-              {item.link ? (
+              {"link" in item && item.link ? (
                 <Link
                   href={item.link}
                   className="inline-flex rounded-md border border-white/20 px-3 py-1.5 text-xs hover:border-cyan-300/60"

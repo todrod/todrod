@@ -34,9 +34,6 @@ export default function HomePage() {
               <Button asChild className="bg-pink-400 text-slate-950 hover:bg-pink-300">
                 <a href={festivalAppHref}>Open Festival App</a>
               </Button>
-              <Button asChild className="bg-fuchsia-400 text-slate-950 hover:bg-fuchsia-300">
-                <Link href="/lab/festival-workflow">Festival Workflow</Link>
-              </Button>
               <Button
                 asChild
                 variant="outline"
