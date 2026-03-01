@@ -18,3 +18,5 @@ export const festivalAppHref =
 
 export const festivalAppRepoHref =
   process.env.NEXT_PUBLIC_FESTIVAL_APP_REPO_URL ?? "https://github.com/todrod/festivalapp";
+
+export const festivalAppEmbedHref = process.env.NEXT_PUBLIC_FESTIVAL_APP_EMBED_URL ?? "";

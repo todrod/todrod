@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { festivalAppRepoHref } from "@/lib/urls";
+import { festivalAppEmbedHref, festivalAppRepoHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Festival App",
@@ -17,6 +17,9 @@ const modules = [
 ];
 
 export default function FestivalAppPage() {
+  const embedUrl = festivalAppEmbedHref.trim();
+  const canEmbed = embedUrl.length > 0 && !embedUrl.includes("/lab/festival-app");
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
       <header className="space-y-3">
@@ -50,6 +53,31 @@ export default function FestivalAppPage() {
           </Card>
         ))}
       </div>
+
+      <Card className="border-pink-300/40 bg-pink-500/10">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-base">Live Embedded App</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            This panel embeds the running Festival App environment directly inside the Lab.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {canEmbed ? (
+            <iframe
+              src={embedUrl}
+              title="Festival App Embed"
+              className="h-[920px] w-full rounded-xl border border-white/20 bg-black/20"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          ) : (
+            <div className="rounded-xl border border-white/20 bg-black/20 p-4 text-sm text-muted-foreground">
+              Set <code className="rounded bg-black/40 px-1 py-0.5 text-zinc-100">NEXT_PUBLIC_FESTIVAL_APP_EMBED_URL</code> to
+              your Festival App URL (for example your VPS host) to enable in-page embed.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
