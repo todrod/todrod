@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { festivalAppAdminHref, festivalAppHref, festivalAppRepoHref } from "@/lib/urls";
+import { getLabAccessPath } from "@/lib/lab-access";
+import { festivalAppRepoHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Festival App",
@@ -26,12 +27,12 @@ export default function FestivalAppPage() {
           St. Clement Strawberry Festival volunteer scheduler workspace.
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href={festivalAppHref} className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
+          <Link href={getLabAccessPath("festival-app")} className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
             Open Volunteer Signup
-          </a>
-          <a href={festivalAppAdminHref} className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
+          </Link>
+          <Link href={getLabAccessPath("festival-admin")} className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
             Open Admin
-          </a>
+          </Link>
           <a href={festivalAppRepoHref} target="_blank" rel="noreferrer" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
             Open GitHub Repo
           </a>

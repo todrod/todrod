@@ -40,10 +40,10 @@ export const siteContent = {
     description:
       "Personal operating system for Todd Rodriguez: projects, experiments, and build logs.",
     about: [
-      "I like turning rough ideas into working systems that people can actually use.",
-      "Most of my work sits at the edge of AI workflows, practical education tools, and product experience design.",
-      "I ship quickly, measure what matters, and refine in public.",
-      "This site is my builder dashboard: what I am making, what I am testing, and what I am learning.",
+      "I design and deliver reliable digital systems that translate complex ideas into practical products.",
+      "My work sits at the intersection of AI implementation, educational technology, and product experience design.",
+      "I focus on strong execution, measurable outcomes, and long-term maintainability.",
+      "This site is a structured portfolio of projects, applied experiments, and product work.",
     ],
     contact: {
       email: "mailto:hello@todrod.com",

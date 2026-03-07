@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { formatDate } from "@/lib/site-utils";
-import { festivalAppHref } from "@/lib/urls";
+import { getLabAccessPath } from "@/lib/lab-access";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -15,67 +17,105 @@ export default function LabPage() {
   const lab = [...siteContent.lab].sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">The Lab</h1>
-        <p className="text-muted-foreground">Small experiments and prototypes I use to test ideas quickly.</p>
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+      <header className="space-y-4">
+        <Badge className="border-cyan-300/35 bg-cyan-500/15 text-cyan-100">Lab Directory</Badge>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">All Lab Projects</h1>
+          <p className="max-w-2xl text-muted-foreground">
+            Central place for prototypes, tools, and experiments. Open any project directly from its preview card.
+          </p>
+        </div>
       </header>
 
-      <Card className="border-cyan-300/40 bg-cyan-500/10">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-base">Template Builder</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Visually pick palette, layout, and project goal, then generate reusable starter templates.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/lab/template-builder" className="rounded-md bg-cyan-400 px-3 py-2 text-sm font-semibold text-black hover:opacity-90">
-              Open Builder
-            </Link>
-            <Link href="/lab/template-builder/gallery" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-cyan-300/60">
-              View Gallery
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="overflow-hidden border-cyan-300/30 bg-cyan-500/10">
+          <Image src="/images/lab/echo-bootcamp.png" alt="Bootcamp suite preview" width={1440} height={900} className="h-44 w-full object-cover" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Bootcamp Suite</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Echo and cath lab exam-prep apps grouped in one place for easier navigation.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-cyan-400 text-slate-950 hover:bg-cyan-300">
+                <Link href={getLabAccessPath("echo-bootcamp")}>Open Echo</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                <Link href={getLabAccessPath("cath-bootcamp")}>Open Cath Lab</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card className="border-red-300/40 bg-red-500/10">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-base">Heart to Heart with Dr. Hadi</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Mobile-first podcast landing page concept for “Protecting the Pump.”
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/lab/heart-to-heart" className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400">
-              Open Podcast Prototype
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        <Card className="overflow-hidden border-teal-300/30 bg-teal-500/10">
+          <Image src="/images/lab/tca-lab.png" alt="TCA Lab preview" width={1440} height={900} className="h-44 w-full object-cover" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">TCA Lab Site</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Clinical service site with patient forms and service pages.</p>
+            <Button asChild size="sm" className="bg-teal-400 text-slate-950 hover:bg-teal-300">
+              <Link href={getLabAccessPath("tca-lab")}>Open TCA Lab</Link>
+            </Button>
+          </CardContent>
+        </Card>
 
-      <Card className="border-pink-300/40 bg-pink-500/10">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-base">Festival App</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Volunteer intake and admin scheduling system for St. Clement Strawberry Festival.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <a href={festivalAppHref} className="rounded-md bg-pink-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-pink-400">
-              Open Festival App
-            </a>
-            <Link href="/lab/festival-app" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:border-pink-300/60">
-              Project Details
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        <Card className="overflow-hidden border-violet-300/30 bg-violet-500/10">
+          <Image src="/images/lab/template-builder.png" alt="Template builder preview" width={1440} height={900} className="h-44 w-full object-cover" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Template Builder</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Generate site starters from layout, style, and goal selections.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-violet-400 text-slate-950 hover:bg-violet-300">
+                <Link href={getLabAccessPath("template-builder")}>Open Builder</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                <Link href="/lab/template-builder/gallery">Gallery</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="overflow-hidden border-rose-300/30 bg-rose-500/10">
+          <Image src="/images/lab/heart-to-heart.png" alt="Heart to Heart preview" width={1440} height={900} className="h-44 w-full object-cover" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Heart to Heart</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Podcast landing page concept for Dr. Hadi.</p>
+            <Button asChild size="sm" className="bg-rose-400 text-slate-950 hover:bg-rose-300">
+              <Link href={getLabAccessPath("heart-to-heart")}>Open Prototype</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border-pink-300/30 bg-pink-500/10">
+          <Image src="/images/lab/festival-app.png" alt="Festival app preview" width={1440} height={900} className="h-44 w-full object-cover" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Festival App</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Volunteer signup and schedule tooling for festival operations.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-pink-400 text-slate-950 hover:bg-pink-300">
+                <Link href={getLabAccessPath("festival-app")}>Open App</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                <Link href="/lab/festival-app">Details</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">Recent Experiments</h2>
+        <p className="text-sm text-muted-foreground">Smaller tests and notes from ongoing R&D work.</p>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {lab.map((item) => (
           <Card key={`${item.title}-${item.date}`} className="border-white/10 bg-card/70">
             <CardHeader className="space-y-2">
