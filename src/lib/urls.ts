@@ -23,4 +23,4 @@ export const festivalAppRepoHref =
   process.env.NEXT_PUBLIC_FESTIVAL_APP_REPO_URL ?? "https://github.com/todrod/festivalapp";
 
 export const cardiopaHref =
-  process.env.NEXT_PUBLIC_CARDIO_PA_URL ?? "https://cardio-pa.todrod.com";
+  process.env.NEXT_PUBLIC_CARDIO_PA_URL ?? "https://cardio-pa.vercel.app";
