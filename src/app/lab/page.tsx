@@ -108,6 +108,24 @@ export default function LabPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="overflow-hidden border-blue-300/30 bg-blue-500/10">
+          <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-blue-950/80 to-indigo-950/80">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black text-white" style={{ background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)", boxShadow: "0 4px 20px rgba(37,99,235,0.5)" }}>♥</div>
+              <span className="text-sm font-semibold text-blue-200">CardioAuth</span>
+            </div>
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">CardioAuth PA Assistant</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">AI-powered prior authorization workflow for cardiology — from patient intake to submission-ready PA letters.</p>
+            <Button asChild size="sm" className="bg-blue-500 text-white hover:bg-blue-400">
+              <Link href={getLabAccessPath("cardio-pa")}>Open CardioAuth</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="space-y-3">
