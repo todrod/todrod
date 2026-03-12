@@ -122,7 +122,7 @@ export default function LabPage() {
           <CardContent className="space-y-3">
             <p className="text-sm text-zinc-200">AI-powered prior authorization workflow for cardiology — from patient intake to submission-ready PA letters.</p>
             <Button asChild size="sm" className="bg-blue-500 text-white hover:bg-blue-400">
-              <Link href={getLabAccessPath("cardio-pa")}>Open CardioAuth</Link>
+              <Link href="https://cardio-pa-todrods-projects.vercel.app" target="_blank" rel="noopener noreferrer">Open CardioAuth</Link>
             </Button>
           </CardContent>
         </Card>
