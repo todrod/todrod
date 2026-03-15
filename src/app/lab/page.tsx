@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { formatDate } from "@/lib/site-utils";
 import { getLabAccessPath } from "@/lib/lab-access";
-import { hablaHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -142,7 +141,7 @@ export default function LabPage() {
             <p className="text-sm text-zinc-200">Private voice-first Latin American Spanish trainer. Conversational sessions with real-time coaching, phrase bank, and spaced repetition.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" className="bg-emerald-500 text-white hover:bg-emerald-400">
-                <Link href={hablaHref} target="_blank" rel="noopener noreferrer">Open Habla</Link>
+                <Link href={getLabAccessPath("habla")}>Open Habla</Link>
               </Button>
               <Badge variant="outline" className="border-emerald-400/40 text-emerald-300 text-xs self-center">Invite only</Badge>
             </div>
