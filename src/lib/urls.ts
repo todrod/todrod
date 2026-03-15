@@ -24,3 +24,6 @@ export const festivalAppRepoHref =
 
 export const cardiopaHref =
   process.env.NEXT_PUBLIC_CARDIO_PA_URL ?? "https://cardio-pa-todrods-projects.vercel.app";
+
+export const hablaHref =
+  process.env.NEXT_PUBLIC_HABLA_URL ?? "https://habla.todrod.com";

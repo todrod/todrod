@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { formatDate } from "@/lib/site-utils";
 import { getLabAccessPath } from "@/lib/lab-access";
+import { hablaHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -124,6 +125,27 @@ export default function LabPage() {
             <Button asChild size="sm" className="bg-blue-500 text-white hover:bg-blue-400">
               <Link href="https://cardio-pa-todrods-projects.vercel.app" target="_blank" rel="noopener noreferrer">Open CardioAuth</Link>
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border-emerald-300/30 bg-emerald-500/10">
+          <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-emerald-950/80 to-teal-950/80">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-3xl" style={{ background: "linear-gradient(135deg, #059669 0%, #0d9488 100%)", boxShadow: "0 4px 20px rgba(5,150,105,0.5)" }}>🇵🇷</div>
+              <span className="text-sm font-semibold text-emerald-200">Habla</span>
+            </div>
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Habla — Spanish Trainer</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Private voice-first Latin American Spanish trainer. Conversational sessions with real-time coaching, phrase bank, and spaced repetition.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-emerald-500 text-white hover:bg-emerald-400">
+                <Link href={hablaHref} target="_blank" rel="noopener noreferrer">Open Habla</Link>
+              </Button>
+              <Badge variant="outline" className="border-emerald-400/40 text-emerald-300 text-xs self-center">Invite only</Badge>
+            </div>
           </CardContent>
         </Card>
       </section>
