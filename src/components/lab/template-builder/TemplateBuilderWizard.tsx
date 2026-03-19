@@ -14,13 +14,18 @@ import {
   clearSelection,
   defaultTemplateBrief,
   deleteDraft,
+  deleteFavorite,
+  isFavorited,
   loadBrief,
   loadDrafts,
+  loadFavorites,
   loadSelection,
   saveBrief,
   saveDraft,
+  saveFavorite,
   saveSelection,
 } from "@/lib/templateBuilder/storage";
+import type { TemplateFavorite } from "@/lib/templateBuilder/types";
 import { readSelectionFromQuery, updateUrlFromSelection } from "@/lib/templateBuilder/query";
 import type {
   Goal,
@@ -184,8 +189,12 @@ export function TemplateBuilderWizard() {
   const [uiStyleId, setUiStyleId] = useState<string>(() => getDefaultUIStyle(init.goalId).id);
   const [brief, setBrief] = useState<TemplateBrief>(() => getInitialBrief());
   const [savedDrafts, setSavedDrafts] = useState(() => getInitialDrafts());
+  const [favorites, setFavorites] = useState<TemplateFavorite[]>(() =>
+    typeof window === "undefined" ? [] : loadFavorites(),
+  );
   const [saveMessage, setSaveMessage] = useState("");
   const [draftsOpen, setDraftsOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
 
   const isClientReady = useSyncExternalStore(
     () => () => {},
@@ -268,6 +277,41 @@ export function TemplateBuilderWizard() {
 
   const removeDraft = (id: string) => {
     setSavedDrafts(deleteDraft(id));
+  };
+
+  const isCurrentFavorited = goalId
+    ? isFavorited(goalId, layoutId, paletteId, uiStyleId, fontPairingId)
+    : false;
+
+  const toggleFavorite = () => {
+    if (!goalId) return;
+    if (isCurrentFavorited) {
+      const match = favorites.find(
+        (f) =>
+          f.goalId === goalId &&
+          f.layoutId === layoutId &&
+          f.paletteId === paletteId &&
+          f.uiStyleId === uiStyleId &&
+          f.fontPairingId === fontPairingId,
+      );
+      if (match) setFavorites(deleteFavorite(match.id));
+    } else {
+      const name = brief.idea.trim() || goal?.label || "Untitled";
+      saveFavorite({ name: name.slice(0, 48), goalId, layoutId, paletteId, uiStyleId, fontPairingId });
+      setFavorites(loadFavorites());
+    }
+  };
+
+  const loadFavoriteConfig = (fav: TemplateFavorite) => {
+    setGoalId(fav.goalId);
+    setLayoutId(fav.layoutId);
+    setPaletteId(fav.paletteId);
+    setUiStyleId(fav.uiStyleId);
+    setFontPairingId(fav.fontPairingId);
+  };
+
+  const removeFavorite = (id: string) => {
+    setFavorites(deleteFavorite(id));
   };
 
   const resetAll = () => {
@@ -514,6 +558,72 @@ export function TemplateBuilderWizard() {
 
           <Divider />
 
+          {/* Favorites */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setFavoritesOpen((v) => !v)}
+              className="flex w-full items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-zinc-300"
+            >
+              <span className="flex items-center gap-1.5">
+                <span className="text-rose-400">♥</span> Favorites
+              </span>
+              <span className="flex items-center gap-1.5">
+                {favorites.length > 0 && (
+                  <span className="rounded-full bg-zinc-800 px-1.5 text-[9px] text-zinc-400">{favorites.length}</span>
+                )}
+                <span>{favoritesOpen ? "▲" : "▼"}</span>
+              </span>
+            </button>
+            {favoritesOpen && (
+              <div className="mt-2 space-y-1.5">
+                {favorites.length === 0 ? (
+                  <p className="py-3 text-center text-[11px] text-zinc-700">
+                    Hit ♡ in the toolbar to save a look you like.
+                  </p>
+                ) : (
+                  favorites.map((fav) => {
+                    const favPalette = palettes.find((p) => p.id === fav.paletteId);
+                    const favGoal = goals.find((g) => g.id === fav.goalId);
+                    return (
+                      <div key={fav.id} className="rounded-lg border border-rose-400/10 bg-rose-400/[0.03] px-3 py-2.5">
+                        {favPalette && (
+                          <div className="mb-2 overflow-hidden rounded" style={{ height: 4 }}>
+                            <div className="flex h-full">
+                              {[favPalette.tokens.primary, favPalette.tokens.accent, favPalette.tokens.secondary, favPalette.tokens.surface, favPalette.tokens.background].map((c, i) => (
+                                <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-[12px] font-medium text-zinc-300">{fav.name}</p>
+                        {favGoal && <p className="mt-0.5 text-[10px] text-zinc-600">{favGoal.label}</p>}
+                        <div className="mt-2 flex gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => loadFavoriteConfig(fav)}
+                            className="rounded border border-rose-400/25 px-2 py-1 text-[10px] text-rose-300 transition hover:border-rose-400/50"
+                          >
+                            Load
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeFavorite(fav.id)}
+                            className="rounded border border-white/8 px-2 py-1 text-[10px] text-zinc-500 transition hover:border-rose-400/30 hover:text-rose-400"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+          <Divider />
+
           {/* Saved Drafts */}
           <div className="mt-4">
             <button
@@ -594,15 +704,31 @@ export function TemplateBuilderWizard() {
               </span>
             )}
           </div>
-          {canGenerate && (
-            <button
-              type="button"
-              onClick={openResult}
-              className="rounded-lg bg-cyan-400 px-4 py-1.5 text-[12px] font-semibold text-black transition hover:bg-cyan-300"
-            >
-              Continue to Result →
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {goalId && (
+              <button
+                type="button"
+                onClick={toggleFavorite}
+                title={isCurrentFavorited ? "Remove from favorites" : "Add to favorites"}
+                className={`rounded-lg border px-3 py-1.5 text-[13px] transition ${
+                  isCurrentFavorited
+                    ? "border-rose-400/40 bg-rose-400/10 text-rose-400 hover:bg-rose-400/20"
+                    : "border-white/10 text-zinc-500 hover:border-rose-400/30 hover:text-rose-400"
+                }`}
+              >
+                {isCurrentFavorited ? "♥" : "♡"}
+              </button>
+            )}
+            {canGenerate && (
+              <button
+                type="button"
+                onClick={openResult}
+                className="rounded-lg bg-cyan-400 px-4 py-1.5 text-[12px] font-semibold text-black transition hover:bg-cyan-300"
+              >
+                Continue to Result →
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Workspace */}

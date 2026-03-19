@@ -2,6 +2,7 @@ import type {
   TemplateBrief,
   TemplateBuilderDraft,
   TemplateBuilderStyleIntensity,
+  TemplateFavorite,
   TemplateSelection,
 } from "@/lib/templateBuilder/types";
 
@@ -102,4 +103,54 @@ export function deleteDraft(id: string): TemplateBuilderDraft[] {
   const nextDrafts = loadDrafts().filter((item) => item.id !== id);
   window.localStorage.setItem(DRAFTS_KEY, JSON.stringify(nextDrafts));
   return nextDrafts;
+}
+
+const FAVORITES_KEY = "template-builder-favorites-v1";
+
+export function loadFavorites(): TemplateFavorite[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(FAVORITES_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as TemplateFavorite[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveFavorite(input: Omit<TemplateFavorite, "id" | "savedAt">): TemplateFavorite {
+  const next: TemplateFavorite = {
+    id: `fav-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    savedAt: new Date().toISOString(),
+    ...input,
+  };
+  if (typeof window === "undefined") return next;
+  const nextFavs = [next, ...loadFavorites()].slice(0, 20);
+  window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(nextFavs));
+  return next;
+}
+
+export function deleteFavorite(id: string): TemplateFavorite[] {
+  if (typeof window === "undefined") return [];
+  const next = loadFavorites().filter((f) => f.id !== id);
+  window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+  return next;
+}
+
+export function isFavorited(
+  goalId: string,
+  layoutId: string,
+  paletteId: string,
+  uiStyleId: string,
+  fontPairingId: string,
+): boolean {
+  return loadFavorites().some(
+    (f) =>
+      f.goalId === goalId &&
+      f.layoutId === layoutId &&
+      f.paletteId === paletteId &&
+      f.uiStyleId === uiStyleId &&
+      f.fontPairingId === fontPairingId,
+  );
 }

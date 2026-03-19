@@ -156,3 +156,14 @@ export type TemplateBuilderDraft = {
   selection: TemplateSelection;
   styleIntensity: TemplateBuilderStyleIntensity;
 };
+
+export type TemplateFavorite = {
+  id: string;
+  name: string;
+  savedAt: string;
+  goalId: string;
+  layoutId: string;
+  paletteId: string;
+  uiStyleId: string;
+  fontPairingId: string;
+};
