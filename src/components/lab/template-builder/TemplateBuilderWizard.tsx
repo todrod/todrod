@@ -1,36 +1,112 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { goals } from "@/data/goals";
 import { layouts } from "@/data/layouts";
 import { palettes } from "@/data/palettes";
-import { templateIdeas } from "@/data/templateIdeas";
-import { GoalGrid } from "@/components/lab/template-builder/GoalGrid";
-import { LayoutGrid } from "@/components/lab/template-builder/LayoutGrid";
-import { PaletteGrid } from "@/components/lab/template-builder/PaletteGrid";
-import { PreviewFrame } from "@/components/lab/template-builder/PreviewFrame";
-import { SearchBar } from "@/components/lab/template-builder/SearchBar";
-import { Stepper } from "@/components/lab/template-builder/Stepper";
-import { SummaryPanel } from "@/components/lab/template-builder/SummaryPanel";
-import { clearSelection, loadSelection, saveSelection } from "@/lib/templateBuilder/storage";
+import { fontPairings, getDefaultFontPairing } from "@/data/fontPairings";
+import { uiStyleOptions, getDefaultUIStyle } from "@/data/uiStyleOptions";
+import { VirtualWorkspace } from "@/components/lab/template-builder/VirtualWorkspace";
+import {
+  clearSelection,
+  defaultTemplateBrief,
+  deleteDraft,
+  loadBrief,
+  loadDrafts,
+  loadSelection,
+  saveBrief,
+  saveDraft,
+  saveSelection,
+} from "@/lib/templateBuilder/storage";
 import { readSelectionFromQuery, updateUrlFromSelection } from "@/lib/templateBuilder/query";
-import type { Goal, LayoutTemplate, Palette } from "@/lib/templateBuilder/types";
+import type {
+  Goal,
+  LayoutTemplate,
+  Palette,
+  TemplateBrief,
+  TemplateBuilderMustHave,
+} from "@/lib/templateBuilder/types";
 
-type WizardStep = 1 | 2 | 3 | 4;
-type StyleIntensity = "minimal" | "bold" | "editorial";
-type SmartVariant = {
-  id: string;
-  paletteId: string;
-  layoutId: string;
-  goalId: string;
-  reason: string;
+const mustHaveOptions: Array<{ id: TemplateBuilderMustHave; label: string }> = [
+  { id: "booking", label: "Booking" },
+  { id: "pricing", label: "Pricing" },
+  { id: "testimonials", label: "Testimonials" },
+  { id: "faq", label: "FAQ" },
+  { id: "gallery", label: "Gallery" },
+  { id: "team", label: "Team" },
+  { id: "forms", label: "Forms" },
+  { id: "map", label: "Map" },
+  { id: "docs", label: "Docs" },
+  { id: "schedule", label: "Schedule" },
+];
+
+const layoutsByType = layouts.reduce<Record<string, LayoutTemplate[]>>((acc, layout) => {
+  const group = acc[layout.type] ?? [];
+  group.push(layout);
+  acc[layout.type] = group;
+  return acc;
+}, {});
+
+const layoutTypeLabels: Record<string, string> = {
+  landing: "Landing",
+  dashboard: "Dashboard",
+  content: "Content",
+  commerce: "Commerce",
+  app: "App",
+  exam: "Exam",
 };
-const layoutTypeFilters = ["all", "landing", "dashboard", "content", "commerce", "app", "exam"] as const;
-type LayoutTypeFilter = (typeof layoutTypeFilters)[number];
-const goalCategoryFilters = ["all", "medical", "creator", "business", "commerce", "education", "content", "events"] as const;
-type GoalCategoryFilter = (typeof goalCategoryFilters)[number];
+
+// ─── Dropdown component ───────────────────────────────────────────────────────
+
+function ControlLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
+      {children}
+    </p>
+  );
+}
+
+function StyledSelect({
+  value,
+  onChange,
+  children,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full appearance-none rounded-xl border border-white/12 bg-zinc-900/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/20 cursor-pointer"
+      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2371717a'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", backgroundSize: "8px" }}
+    >
+      {children}
+    </select>
+  );
+}
+
+function ColorSwatches({ palette }: { palette: Palette | undefined }) {
+  if (!palette) return null;
+  return (
+    <div className="mt-1.5 flex gap-1.5">
+      {[palette.tokens.primary, palette.tokens.accent, palette.tokens.secondary, palette.tokens.background].map((color) => (
+        <div
+          key={color}
+          className="h-5 w-5 rounded-full border border-white/15"
+          style={{ backgroundColor: color }}
+          title={color}
+        />
+      ))}
+      <span className="ml-1 text-[10px] text-zinc-500">{palette.name}</span>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function TemplateBuilderWizard() {
   const router = useRouter();
@@ -49,399 +125,359 @@ export function TemplateBuilderWizard() {
     };
   };
 
-  const [step, setStep] = useState<WizardStep>(1);
-  const [search, setSearch] = useState("");
-  const [paletteId, setPaletteId] = useState<string>(() => getInitialSelection().paletteId);
-  const [layoutId, setLayoutId] = useState<string>(() => getInitialSelection().layoutId);
+  const getInitialBrief = () => (typeof window === "undefined" ? defaultTemplateBrief : loadBrief());
+  const getInitialDrafts = () => (typeof window === "undefined" ? [] : loadDrafts());
+
   const [goalId, setGoalId] = useState<string>(() => getInitialSelection().goalId);
-  const [previewTheme, setPreviewTheme] = useState(true);
-  const [previewDark, setPreviewDark] = useState(true);
-  const [styleIntensity, setStyleIntensity] = useState<StyleIntensity>("minimal");
-  const [layoutTypeFilter, setLayoutTypeFilter] = useState<LayoutTypeFilter>("all");
-  const [goalCategoryFilter, setGoalCategoryFilter] = useState<GoalCategoryFilter>("all");
-  const [smartVariants, setSmartVariants] = useState<SmartVariant[]>([]);
+  const [layoutId, setLayoutId] = useState<string>(() => getInitialSelection().layoutId);
+  const [paletteId, setPaletteId] = useState<string>(() => getInitialSelection().paletteId);
+  const [fontPairingId, setFontPairingId] = useState<string>(() => {
+    const init = getInitialSelection().goalId;
+    return getDefaultFontPairing(init).id;
+  });
+  const [uiStyleId, setUiStyleId] = useState<string>(() => {
+    const init = getInitialSelection().goalId;
+    return getDefaultUIStyle(init).id;
+  });
+  const [brief, setBrief] = useState<TemplateBrief>(() => getInitialBrief());
+  const [savedDrafts, setSavedDrafts] = useState(() => getInitialDrafts());
+  const [saveMessage, setSaveMessage] = useState("");
+  const [draftsOpen, setDraftsOpen] = useState(false);
+
+  const isClientReady = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  // Sync URL + storage
+  useEffect(() => {
+    if (!isClientReady) return;
+    saveSelection({ paletteId, layoutId, goalId });
+    updateUrlFromSelection({ paletteId, layoutId, goalId });
+  }, [isClientReady, paletteId, layoutId, goalId]);
 
   useEffect(() => {
-    const selection = { paletteId, layoutId, goalId };
-    saveSelection(selection);
-    updateUrlFromSelection(selection);
-  }, [paletteId, layoutId, goalId]);
+    if (!isClientReady) return;
+    saveBrief(brief);
+  }, [isClientReady, brief]);
+
+  // Auto-update font/style when goal changes
+  const handleGoalChange = (newGoalId: string) => {
+    setGoalId(newGoalId);
+    setFontPairingId(getDefaultFontPairing(newGoalId).id);
+    setUiStyleId(getDefaultUIStyle(newGoalId).id);
+  };
 
   const palette = palettes.find((item) => item.id === paletteId);
   const layout = layouts.find((item) => item.id === layoutId);
   const goal = goals.find((item) => item.id === goalId);
+  const fontPairing = fontPairings.find((item) => item.id === fontPairingId);
+  const uiStyle = uiStyleOptions.find((item) => item.id === uiStyleId);
 
-  const filterCards = <T extends { name?: string; label?: string; description: string; tags: string[] }>(items: T[]) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((item) => {
-      const label = item.name ?? item.label ?? "";
-      return [label, item.description, item.tags.join(" ")].join(" ").toLowerCase().includes(q);
-    });
-  };
-
-  const intensityTags: Record<StyleIntensity, string[]> = {
-    minimal: ["minimal", "neutral", "professional", "light", "clean", "enterprise", "docs"],
-    bold: ["bold", "dark", "creative", "premium", "campaign", "conversion", "startup", "event"],
-    editorial: ["editorial", "content", "blog", "docs", "knowledge", "story", "portfolio"],
-  };
-
-  const scoreByIntensity = (tags: string[]) =>
-    tags.reduce((acc, tag) => {
-      const lower = tag.toLowerCase();
-      return intensityTags[styleIntensity].some((token) => lower.includes(token)) ? acc + 1 : acc;
-    }, 0);
-
-  const sortByIntensity = <T extends { tags: string[] }>(items: T[]) =>
-    [...items].sort((a, b) => scoreByIntensity(b.tags) - scoreByIntensity(a.tags));
-
-  const paletteItems = sortByIntensity(filterCards<Palette>(palettes));
-  const layoutItems = sortByIntensity(filterCards<LayoutTemplate>(layouts)).filter((item) =>
-    layoutTypeFilter === "all" ? true : item.type === layoutTypeFilter,
-  );
-  const goalItems = sortByIntensity(filterCards<Goal>(goals)).filter((item) => {
-    if (goalCategoryFilter === "all") return true;
-    const text = `${item.label} ${item.description} ${item.tags.join(" ")}`.toLowerCase();
-    if (goalCategoryFilter === "medical") return /medical|clinic|health/.test(text);
-    if (goalCategoryFilter === "creator") return /podcast|portfolio|agency|creator/.test(text);
-    if (goalCategoryFilter === "business") return /saas|app|real-estate|office|nonprofit/.test(text);
-    if (goalCategoryFilter === "commerce") return /commerce|ecommerce|store|restaurant/.test(text);
-    if (goalCategoryFilter === "education") return /exam|course|education/.test(text);
-    if (goalCategoryFilter === "content") return /docs|blog|content/.test(text);
-    if (goalCategoryFilter === "events") return /event|conference/.test(text);
-    return true;
-  });
-
-  const conceptItems = sortByIntensity(templateIdeas).filter((item) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
-    return `${item.name} ${item.description} ${item.tags.join(" ")}`.toLowerCase().includes(q);
-  });
-
-  const canNext = step === 1 ? Boolean(paletteId) : step === 2 ? Boolean(layoutId) : step === 3 ? Boolean(goalId) : true;
-
-  const goNext = () => setStep((prev) => (prev < 4 ? ((prev + 1) as WizardStep) : prev));
-  const goBack = () => setStep((prev) => (prev > 1 ? ((prev - 1) as WizardStep) : prev));
-
-  const resetAll = () => {
-    setPaletteId("");
-    setLayoutId("");
-    setGoalId("");
-    setSearch("");
-    setStyleIntensity("minimal");
-    setLayoutTypeFilter("all");
-    setGoalCategoryFilter("all");
-    setSmartVariants([]);
-    setStep(1);
-    clearSelection();
-    router.replace("/lab/template-builder");
-  };
+  const canGenerate = Boolean(paletteId && layoutId && goalId);
 
   const openResult = () => {
-    if (!paletteId || !layoutId || !goalId) return;
+    if (!canGenerate) return;
     router.push(`/lab/template-builder/result?palette=${paletteId}&layout=${layoutId}&goal=${goalId}`);
   };
 
-  const applyConcept = (conceptId: string) => {
-    const concept = templateIdeas.find((item) => item.id === conceptId);
-    if (!concept) return;
-    setPaletteId(concept.selection.paletteId);
-    setLayoutId(concept.selection.layoutId);
-    setGoalId(concept.selection.goalId);
-    setStep(1);
+  const toggleMustHave = (feature: TemplateBuilderMustHave) => {
+    setBrief((current) => ({
+      ...current,
+      mustHaves: current.mustHaves.includes(feature)
+        ? current.mustHaves.filter((item) => item !== feature)
+        : [...current.mustHaves, feature],
+    }));
   };
 
-  const surpriseMe = () => {
-    const randomFrom = <T,>(items: T[]): T | undefined => {
-      if (items.length === 0) return undefined;
-      return items[Math.floor(Math.random() * items.length)];
-    };
-
-    const pickPalette = randomFrom(paletteItems);
-    const pickLayout = randomFrom(layoutItems);
-    const pickGoal = randomFrom(goalItems);
-
-    if (!pickPalette || !pickLayout || !pickGoal) return;
-
-    setPaletteId(pickPalette.id);
-    setLayoutId(pickLayout.id);
-    setGoalId(pickGoal.id);
-    setStep(4);
+  const saveCurrentDraft = () => {
+    if (!goal) return;
+    const name = brief.idea.trim() || goal.label;
+    const nextDraft = saveDraft({
+      brief,
+      selection: { paletteId, layoutId, goalId },
+      styleIntensity: "minimal",
+      name: name.slice(0, 48),
+    });
+    setSavedDrafts(loadDrafts());
+    setSaveMessage(`Saved: ${nextDraft.name}`);
+    window.setTimeout(() => setSaveMessage(""), 2000);
   };
 
-  const generateSmartVariants = () => {
-    const palettePool = paletteItems.slice(0, 12);
-    const layoutPool = layoutItems.slice(0, 12);
-    const goalPool = goalItems.slice(0, 12);
-    if (palettePool.length === 0 || layoutPool.length === 0 || goalPool.length === 0) {
-      setSmartVariants([]);
-      return;
-    }
-
-    const weightedPick = <T,>(items: T[]): T => {
-      const total = items.reduce((sum, _, index) => sum + (items.length - index), 0);
-      let cursor = Math.random() * total;
-      for (let index = 0; index < items.length; index += 1) {
-        cursor -= items.length - index;
-        if (cursor <= 0) return items[index];
-      }
-      return items[0];
-    };
-
-    const variants: SmartVariant[] = [];
-    const seen = new Set<string>();
-    let attempts = 0;
-    while (variants.length < 3 && attempts < 60) {
-      attempts += 1;
-      const p = weightedPick(palettePool);
-      const l = weightedPick(layoutPool);
-      const g = weightedPick(goalPool);
-      const key = `${p.id}|${l.id}|${g.id}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      const reasonBits = [
-        styleIntensity === "bold"
-          ? "High-impact look for attention and conversion"
-          : styleIntensity === "editorial"
-            ? "Content-forward visual rhythm for readability"
-            : "Clean, production-safe structure for fast launch",
-        layoutTypeFilter !== "all" ? `layout filtered to ${layoutTypeFilter}` : null,
-        goalCategoryFilter !== "all" ? `goal tuned for ${goalCategoryFilter}` : null,
-      ].filter(Boolean);
-
-      variants.push({
-        id: `smart-${p.id}-${l.id}-${g.id}`,
-        paletteId: p.id,
-        layoutId: l.id,
-        goalId: g.id,
-        reason: reasonBits.join(" • "),
-      });
-    }
-
-    setSmartVariants(variants);
+  const loadDraft = (id: string) => {
+    const draft = savedDrafts.find((item) => item.id === id);
+    if (!draft) return;
+    setBrief(draft.brief);
+    setGoalId(draft.selection.goalId);
+    setPaletteId(draft.selection.paletteId);
+    setLayoutId(draft.selection.layoutId);
+    setFontPairingId(getDefaultFontPairing(draft.selection.goalId).id);
+    setUiStyleId(getDefaultUIStyle(draft.selection.goalId).id);
   };
 
-  const applySmartVariant = (variant: SmartVariant) => {
-    setPaletteId(variant.paletteId);
-    setLayoutId(variant.layoutId);
-    setGoalId(variant.goalId);
-    setStep(4);
+  const removeDraft = (id: string) => {
+    setSavedDrafts(deleteDraft(id));
   };
+
+  const resetAll = () => {
+    setGoalId("");
+    setLayoutId("");
+    setPaletteId("");
+    setBrief(defaultTemplateBrief);
+    setFontPairingId(fontPairings[0]!.id);
+    setUiStyleId(uiStyleOptions[0]!.id);
+    clearSelection();
+    saveBrief(defaultTemplateBrief);
+    router.replace("/lab/template-builder");
+  };
+
+  if (!isClientReady) {
+    return (
+      <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-zinc-400">
+          Loading template builder...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Stepper current={step} />
-        <div className="flex items-center gap-2">
-          <Link href="/lab/template-builder/gallery" className="rounded-md border border-white/15 px-3 py-2 text-xs hover:border-cyan-300/60">
-            Gallery
-          </Link>
-          <button type="button" onClick={resetAll} className="rounded-md border border-white/15 px-3 py-2 text-xs hover:border-rose-300/70">
-            Reset
-          </button>
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#09090f]">
+
+      {/* ── Left panel ─────────────────────────────────────────────────── */}
+      <div className="flex w-[280px] flex-shrink-0 flex-col overflow-y-auto border-r border-white/8 bg-zinc-950">
+
+        {/* Header */}
+        <div className="border-b border-white/8 px-4 py-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h1 className="text-sm font-semibold text-zinc-100">Template Builder</h1>
+            <Link href="/lab/template-builder/gallery" className="text-[10px] text-zinc-500 hover:text-zinc-300">
+              Gallery
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={openResult}
+              disabled={!canGenerate}
+              className="w-full rounded-xl bg-cyan-400 py-2.5 text-sm font-semibold text-black disabled:opacity-35 disabled:cursor-not-allowed hover:opacity-90 transition"
+            >
+              Continue to Result →
+            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={saveCurrentDraft}
+                disabled={!goalId}
+                className="flex-1 rounded-xl border border-emerald-300/30 py-2 text-xs text-emerald-200 hover:border-emerald-300/60 disabled:opacity-30 transition"
+              >
+                Save Draft
+              </button>
+              <button
+                type="button"
+                onClick={resetAll}
+                className="flex-1 rounded-xl border border-white/12 py-2 text-xs text-zinc-400 hover:border-white/25 transition"
+              >
+                Reset
+              </button>
+            </div>
+            {saveMessage && <p className="text-center text-[10px] text-emerald-300">{saveMessage}</p>}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex-1 space-y-5 px-4 py-5">
+
+          {/* Goal */}
+          <div>
+            <ControlLabel>Goal</ControlLabel>
+            <StyledSelect value={goalId} onChange={handleGoalChange}>
+              <option value="">— Select a goal —</option>
+              {(goals as Goal[]).map((g) => (
+                <option key={g.id} value={g.id}>{g.label}</option>
+              ))}
+            </StyledSelect>
+            {goal && <p className="mt-1.5 text-[10px] text-zinc-500">{goal.description}</p>}
+          </div>
+
+          {/* UI Style */}
+          <div>
+            <ControlLabel>UI Style</ControlLabel>
+            <StyledSelect value={uiStyleId} onChange={setUiStyleId}>
+              {uiStyleOptions.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </StyledSelect>
+            {uiStyle && <p className="mt-1.5 text-[10px] text-zinc-500">{uiStyle.description}</p>}
+          </div>
+
+          {/* Layout */}
+          <div>
+            <ControlLabel>Layout</ControlLabel>
+            <StyledSelect value={layoutId} onChange={setLayoutId}>
+              <option value="">— Select a layout —</option>
+              {Object.entries(layoutsByType).map(([type, items]) => (
+                <optgroup key={type} label={layoutTypeLabels[type] ?? type}>
+                  {items.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </StyledSelect>
+            {layout && <p className="mt-1.5 text-[10px] text-zinc-500">{layout.description}</p>}
+          </div>
+
+          {/* Color Palette */}
+          <div>
+            <ControlLabel>Color Palette</ControlLabel>
+            <StyledSelect value={paletteId} onChange={setPaletteId}>
+              <option value="">— Select a palette —</option>
+              {palettes.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </StyledSelect>
+            <ColorSwatches palette={palette} />
+          </div>
+
+          {/* Font Pairing */}
+          <div>
+            <ControlLabel>Typography</ControlLabel>
+            <StyledSelect value={fontPairingId} onChange={setFontPairingId}>
+              {fontPairings.map((fp) => (
+                <option key={fp.id} value={fp.id}>{fp.name}</option>
+              ))}
+            </StyledSelect>
+            {fontPairing && (
+              <div className="mt-1.5 space-y-0.5">
+                <p className="text-[10px] text-zinc-400">
+                  <span className="text-zinc-300">{fontPairing.headingFont}</span> · Heading
+                </p>
+                <p className="text-[10px] text-zinc-400">
+                  <span className="text-zinc-300">{fontPairing.bodyFont}</span> · Body
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Idea notes */}
+          <div>
+            <ControlLabel>Idea Notes (optional)</ControlLabel>
+            <input
+              type="text"
+              value={brief.idea}
+              onChange={(e) => setBrief((c) => ({ ...c, idea: e.target.value }))}
+              placeholder="Brief description of your project..."
+              className="w-full rounded-xl border border-white/12 bg-zinc-900/80 px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 outline-none focus:border-cyan-400/60"
+            />
+          </div>
+
+          {/* Must-Have Sections */}
+          <div>
+            <ControlLabel>Must-Have Sections</ControlLabel>
+            <div className="flex flex-wrap gap-1.5">
+              {mustHaveOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleMustHave(opt.id)}
+                  className={`rounded-full border px-2.5 py-1 text-[10px] transition ${
+                    brief.mustHaves.includes(opt.id)
+                      ? "border-cyan-300/65 bg-cyan-300/14 text-cyan-100"
+                      : "border-white/15 text-zinc-400 hover:border-white/25"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Saved Drafts */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setDraftsOpen((v) => !v)}
+              className="flex w-full items-center justify-between text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400 hover:text-zinc-200 transition"
+            >
+              <span>Saved Drafts ({savedDrafts.length})</span>
+              <span>{draftsOpen ? "▲" : "▼"}</span>
+            </button>
+            {draftsOpen && (
+              <div className="mt-2 space-y-2">
+                {savedDrafts.length === 0 ? (
+                  <p className="text-[10px] text-zinc-600">No drafts yet.</p>
+                ) : (
+                  savedDrafts.map((draft) => (
+                    <div key={draft.id} className="rounded-xl border border-white/10 bg-zinc-900/60 p-2.5">
+                      <p className="text-xs font-semibold text-zinc-200">{draft.name}</p>
+                      <p className="mt-0.5 text-[10px] text-zinc-500">{new Date(draft.savedAt).toLocaleDateString()}</p>
+                      <div className="mt-2 flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => loadDraft(draft.id)}
+                          className="rounded-md border border-cyan-300/30 px-2 py-1 text-[10px] text-cyan-200 hover:border-cyan-300/60"
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeDraft(draft.id)}
+                          className="rounded-md border border-white/10 px-2 py-1 text-[10px] text-zinc-400 hover:border-rose-300/50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
-      <PreviewFrame palette={previewTheme ? palette : undefined} dark={previewDark}>
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold">Template Builder</h1>
-              <p className="text-sm text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">
-                Choose a palette, layout, and goal to generate a reusable starter.
-              </p>
-            </div>
-            <div className="flex gap-2 text-xs">
-              <button type="button" onClick={() => setPreviewTheme((v) => !v)} className="rounded-md border border-white/20 px-3 py-2">
-                {previewTheme ? "Theme Preview: On" : "Theme Preview: Off"}
-              </button>
-              <button type="button" onClick={() => setPreviewDark((v) => !v)} className="rounded-md border border-white/20 px-3 py-2">
-                {previewDark ? "Dark" : "Light"}
-              </button>
-            </div>
+      {/* ── Right panel: Virtual Workspace ─────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Workspace toolbar */}
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/8 bg-zinc-950/90 px-5 py-2.5 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Live Preview</span>
+            {goal && (
+              <span className="rounded-full border border-white/12 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-300">{goal.label}</span>
+            )}
+            {uiStyle && (
+              <span className="rounded-full border border-violet-400/25 bg-violet-400/8 px-2 py-0.5 text-[10px] text-violet-300">{uiStyle.name}</span>
+            )}
+            {fontPairing && (
+              <span className="rounded-full border border-amber-400/20 bg-amber-400/6 px-2 py-0.5 text-[10px] text-amber-300">{fontPairing.name}</span>
+            )}
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-black/20 p-2">
-            <span className="px-2 text-xs text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_30%)]">Style Intensity</span>
-            {(["minimal", "bold", "editorial"] as StyleIntensity[]).map((level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => setStyleIntensity(level)}
-                className={`rounded-full border px-3 py-1 text-xs transition ${
-                  styleIntensity === level ? "border-cyan-300/70 bg-cyan-300/15 text-cyan-100" : "border-white/20 text-zinc-300 hover:border-cyan-300/55"
-                }`}
-              >
-                {level === "minimal" ? "Minimal" : level === "bold" ? "Bold" : "Editorial"}
-              </button>
-            ))}
+          {canGenerate && (
             <button
               type="button"
-              onClick={surpriseMe}
-              className="ml-auto rounded-full border border-cyan-300/55 bg-cyan-300/15 px-3 py-1 text-xs text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-300/25"
+              onClick={openResult}
+              className="rounded-xl bg-cyan-400 px-4 py-1.5 text-xs font-semibold text-black hover:opacity-90 transition"
             >
-              Surprise Me
+              Continue to Result →
             </button>
-            <button
-              type="button"
-              onClick={generateSmartVariants}
-              className="rounded-full border border-violet-300/55 bg-violet-300/15 px-3 py-1 text-xs text-violet-100 transition hover:border-violet-200 hover:bg-violet-300/25"
-            >
-              Generate 3 Smart Variants
-            </button>
-          </div>
-
-          <SummaryPanel palette={palette} layout={layout} goal={goal} />
-
-          {step < 4 ? <SearchBar value={search} onChange={setSearch} placeholder="Search by name, description, or tag" /> : null}
-
-          {step < 4 ? (
-            <section className="space-y-3 rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-semibold">Quick Start Concepts</h2>
-                  <p className="text-xs text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">
-                    One click applies a curated palette + layout + goal combo.
-                  </p>
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {conceptItems.slice(0, 8).map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => applyConcept(item.id)}
-                    className="group rounded-xl border border-white/15 bg-card/65 p-3 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/60"
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-zinc-100">{item.name}</span>
-                      <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] text-zinc-300">apply</span>
-                    </div>
-                    <p className="text-xs text-zinc-400">{item.description}</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {item.tags.slice(0, 3).map((tag) => (
-                        <span key={`${item.id}-${tag}`} className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] text-zinc-300">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {step < 4 && smartVariants.length > 0 ? (
-            <section className="space-y-3 rounded-xl border border-violet-300/25 bg-violet-500/10 p-4">
-              <div>
-                <h2 className="text-base font-semibold">Smart Variants</h2>
-                <p className="text-xs text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">Auto-generated combinations tuned to your current filters and style intensity.</p>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3">
-                {smartVariants.map((variant) => {
-                  const vPalette = palettes.find((item) => item.id === variant.paletteId);
-                  const vLayout = layouts.find((item) => item.id === variant.layoutId);
-                  const vGoal = goals.find((item) => item.id === variant.goalId);
-                  if (!vPalette || !vLayout || !vGoal) return null;
-                  return (
-                    <div key={variant.id} className="rounded-xl border border-white/15 bg-card/70 p-3">
-                      <p className="text-sm font-semibold">{vGoal.label}</p>
-                      <p className="text-xs text-zinc-400">{vLayout.name} • {vPalette.name}</p>
-                      <p className="mt-2 text-[11px] text-zinc-400">{variant.reason}</p>
-                      <button
-                        type="button"
-                        onClick={() => applySmartVariant(variant)}
-                        className="mt-3 rounded-md bg-[var(--tb-primary,#22d3ee)] px-3 py-1.5 text-xs font-semibold text-black hover:opacity-90"
-                      >
-                        Use This Variant
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
-          {step === 1 ? (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Step 1: Pick Color Scheme</h2>
-              <p className="text-sm text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">Choose a palette that defines tone and contrast.</p>
-              <PaletteGrid items={paletteItems} selectedId={paletteId} onSelect={setPaletteId} styleIntensity={styleIntensity} />
-            </section>
-          ) : null}
-
-          {step === 2 ? (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Step 2: Pick Layout Template</h2>
-              <p className="text-sm text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">Select the shell structure for your generated starter.</p>
-              <div className="flex flex-wrap gap-2">
-                {layoutTypeFilters.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setLayoutTypeFilter(filter)}
-                    className={`rounded-full border px-3 py-1 text-xs transition ${
-                      layoutTypeFilter === filter ? "border-cyan-300/70 bg-cyan-300/15 text-cyan-100" : "border-white/20 text-zinc-300 hover:border-cyan-300/55"
-                    }`}
-                  >
-                    {filter === "all" ? "All Layouts" : filter[0].toUpperCase() + filter.slice(1)}
-                  </button>
-                ))}
-              </div>
-              <LayoutGrid items={layoutItems} selectedId={layoutId} onSelect={setLayoutId} palette={palette} styleIntensity={styleIntensity} />
-            </section>
-          ) : null}
-
-          {step === 3 ? (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Step 3: Pick Project Goal</h2>
-              <p className="text-sm text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">Goal maps to a recommended section blueprint.</p>
-              <div className="flex flex-wrap gap-2">
-                {goalCategoryFilters.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setGoalCategoryFilter(filter)}
-                    className={`rounded-full border px-3 py-1 text-xs transition ${
-                      goalCategoryFilter === filter ? "border-cyan-300/70 bg-cyan-300/15 text-cyan-100" : "border-white/20 text-zinc-300 hover:border-cyan-300/55"
-                    }`}
-                  >
-                    {filter === "all" ? "All Goals" : filter[0].toUpperCase() + filter.slice(1)}
-                  </button>
-                ))}
-              </div>
-              <GoalGrid items={goalItems} selectedId={goalId} onSelect={setGoalId} styleIntensity={styleIntensity} />
-            </section>
-          ) : null}
-
-          {step === 4 ? (
-            <section className="space-y-3 rounded-xl border border-white/10 bg-card/60 p-4">
-              <h2 className="text-lg font-semibold">Step 4: Result + Generate</h2>
-              <p className="text-sm text-[color-mix(in_srgb,var(--tb-text,#ddd),#fff_35%)]">Review your selections and generate a working template.</p>
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={openResult} className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-black hover:opacity-90">
-                  Continue to Result
-                </button>
-              </div>
-            </section>
-          ) : null}
-
-          <div className="flex items-center justify-between pt-2">
-            <button type="button" onClick={goBack} disabled={step === 1} className="rounded-md border border-white/20 px-4 py-2 text-sm disabled:opacity-50">
-              Back
-            </button>
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={step === 4 || !canNext}
-              className="rounded-md bg-[var(--tb-primary,#22d3ee)] px-4 py-2 text-sm font-semibold text-black disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+          )}
         </div>
-      </PreviewFrame>
+
+        {/* Workspace content */}
+        <div className="min-h-full">
+          <VirtualWorkspace
+            palette={palette}
+            layout={layout}
+            goal={goal}
+            fontPairing={fontPairing}
+            mustHaves={brief.mustHaves}
+          />
+        </div>
+      </div>
+
     </div>
   );
 }
