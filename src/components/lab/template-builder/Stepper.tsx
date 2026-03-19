@@ -1,8 +1,14 @@
 "use client";
 
-const labels = ["Color", "Layout", "Goal", "Result"];
+const defaultLabels = ["Color", "Layout", "Goal", "Result"];
 
-export function Stepper({ current }: { current: 1 | 2 | 3 | 4 }) {
+export function Stepper({
+  current,
+  labels = defaultLabels,
+}: {
+  current: 1 | 2 | 3 | 4;
+  labels?: string[];
+}) {
   return (
     <ol className="grid grid-cols-4 gap-2" aria-label="Template builder steps">
       {labels.map((label, i) => {

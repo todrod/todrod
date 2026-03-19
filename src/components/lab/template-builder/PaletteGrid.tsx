@@ -1,6 +1,5 @@
 "use client";
 
-import { CardSelect } from "@/components/lab/template-builder/CardSelect";
 import type { Palette } from "@/lib/templateBuilder/types";
 
 function PaletteSwatch({ palette, styleIntensity = "minimal" }: { palette: Palette; styleIntensity?: "minimal" | "bold" | "editorial" }) {
@@ -30,6 +29,15 @@ function PaletteSwatch({ palette, styleIntensity = "minimal" }: { palette: Palet
   );
 }
 
+function TokenDot({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="size-3 rounded-full border border-black/10" style={{ backgroundColor: color }} />
+      <span className="text-[11px] uppercase tracking-[0.12em] text-zinc-400">{label}</span>
+    </div>
+  );
+}
+
 export function PaletteGrid({
   items,
   selectedId,
@@ -42,18 +50,55 @@ export function PaletteGrid({
   styleIntensity?: "minimal" | "bold" | "editorial";
 }) {
   return (
-    <div role="radiogroup" aria-label="Color scheme options" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div role="radiogroup" aria-label="Color scheme options" className="grid gap-3 xl:grid-cols-2">
       {items.map((item) => (
-        <CardSelect
+        <button
           key={item.id}
-          id={item.id}
-          selected={selectedId === item.id}
-          onSelect={onSelect}
-          title={item.name}
-          description={item.description}
-          tags={item.tags}
-          preview={<PaletteSwatch palette={item} styleIntensity={styleIntensity} />}
-        />
+          type="button"
+          role="radio"
+          aria-checked={selectedId === item.id}
+          onClick={() => onSelect(item.id)}
+          className={`rounded-[22px] border p-4 text-left transition ${
+            selectedId === item.id
+              ? "border-cyan-300/65 bg-cyan-300/8 shadow-[0_18px_50px_rgba(34,211,238,0.14)]"
+              : "border-white/10 bg-card/55 hover:border-white/20"
+          }`}
+        >
+          <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)] md:items-center">
+            <PaletteSwatch palette={item} styleIntensity={styleIntensity} />
+
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-100">{item.name}</h3>
+                  <p className="mt-1 text-sm text-zinc-400">{item.description}</p>
+                </div>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                    selectedId === item.id ? "bg-cyan-300/15 text-cyan-100" : "bg-white/5 text-zinc-400"
+                  }`}
+                >
+                  {selectedId === item.id ? "Active" : "Select"}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                <TokenDot color={item.tokens.primary} label="Primary" />
+                <TokenDot color={item.tokens.accent} label="Accent" />
+                <TokenDot color={item.tokens.surface} label="Surface" />
+                <TokenDot color={item.tokens.background} label="Background" />
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {item.tags.slice(0, 3).map((tag) => (
+                  <span key={`${item.id}-${tag}`} className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-zinc-400">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </button>
       ))}
     </div>
   );
