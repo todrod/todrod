@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { getProductRecForGoal } from "@/data/productStyles";
+import { getLandingPatternForGoal } from "@/data/landingPatterns";
+import { getGuidelinesForContext } from "@/data/uxGuidelines";
+import { getTopChartsForDashboard } from "@/data/chartRecommendations";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { goals } from "@/data/goals";
@@ -208,6 +212,7 @@ export function TemplateBuilderWizard() {
   const [saveMessage, setSaveMessage] = useState("");
   const [draftsOpen, setDraftsOpen] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [intelligenceOpen, setIntelligenceOpen] = useState(false);
 
   const isClientReady = useSyncExternalStore(
     () => () => {},
@@ -541,6 +546,101 @@ export function TemplateBuilderWizard() {
                 <option key={a.id} value={a.id}>{a.label}</option>
               ))}
             </StyledSelect>
+          </div>
+
+          {/* Design Intelligence */}
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setIntelligenceOpen((v) => !v)}
+              className="flex w-full items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-zinc-300"
+            >
+              <span className="flex items-center gap-1.5">
+                <span>✦</span> Design Intelligence
+              </span>
+              <span>{intelligenceOpen ? "▲" : "▼"}</span>
+            </button>
+
+            {intelligenceOpen && (
+              <div className="mt-3 space-y-3">
+                {/* Smart Match card */}
+                {goalId && (() => {
+                  const productRec = getProductRecForGoal(goalId);
+                  const landingPattern = getLandingPatternForGoal(goalId);
+                  if (!productRec) return null;
+                  return (
+                    <div className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.04] px-3 py-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-cyan-400/60">Smart Match</p>
+                      <p className="mt-1 text-[11px] font-semibold text-zinc-200">{productRec.primaryStyle}</p>
+                      <p className="text-[9px] text-zinc-500">{productRec.productType}</p>
+                      {landingPattern && (
+                        <p className="mt-1 text-[10px] text-cyan-300/70">
+                          Pattern: {landingPattern.name}
+                        </p>
+                      )}
+                      <p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-zinc-600">
+                        {productRec.considerations}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* UX Tips */}
+                {(() => {
+                  const tips = getGuidelinesForContext(layout?.type, brief.mustHaves);
+                  if (tips.length === 0) return null;
+                  return (
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">UX Tips</p>
+                      {tips.slice(0, 4).map((tip) => (
+                        <div
+                          key={tip.id}
+                          className="rounded-md border border-white/[0.06] bg-zinc-900/60 px-2.5 py-2"
+                        >
+                          <div className="flex items-start justify-between gap-1.5">
+                            <p className="text-[10px] font-semibold text-zinc-300">{tip.issue}</p>
+                            <span
+                              className={`shrink-0 rounded px-1 py-0.5 text-[8px] font-bold uppercase ${
+                                tip.severity === "Critical"
+                                  ? "bg-rose-500/20 text-rose-300"
+                                  : tip.severity === "High"
+                                    ? "bg-amber-500/20 text-amber-300"
+                                    : "bg-zinc-700/60 text-zinc-400"
+                              }`}
+                            >
+                              {tip.severity}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[10px] text-emerald-400/80">
+                            ✓ {tip.do_}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Chart Picks — only for dashboard/app layouts */}
+                {(layout?.type === "dashboard" || layout?.type === "app") && (() => {
+                  const charts = getTopChartsForDashboard().slice(0, 4);
+                  return (
+                    <div>
+                      <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-500">Chart Picks</p>
+                      <div className="flex flex-wrap gap-1">
+                        {charts.map((chart) => (
+                          <span
+                            key={chart.id}
+                            className="rounded border border-white/10 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-400"
+                          >
+                            {chart.dataType} → {chart.bestChart}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           <Divider />
