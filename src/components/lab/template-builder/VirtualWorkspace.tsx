@@ -1,10 +1,72 @@
 "use client";
 
 import { useEffect } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import type { LayoutTemplate, Palette, Goal, TemplateBuilderMustHave } from "@/lib/templateBuilder/types";
 import type { FontPairing } from "@/data/fontPairings";
 import type { UIStyleOption } from "@/data/uiStyleOptions";
 import { getWorkspaceContent } from "@/data/workspaceContent";
+import type { AnimationStyleId } from "@/components/lab/template-builder/TemplateBuilderWizard";
+
+// ─── Animation variants ───────────────────────────────────────────────────────
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+function getSectionVariants(style: AnimationStyleId): Variants {
+  switch (style) {
+    case "fade":
+      return {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { duration: 0.5 } },
+      };
+    case "slide-up":
+      return {
+        hidden: { opacity: 0, y: 40 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+      };
+    case "slide-right":
+      return {
+        hidden: { opacity: 0, x: -50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: "easeOut" } },
+      };
+    case "scale":
+      return {
+        hidden: { opacity: 0, scale: 0.92 },
+        visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+      };
+    case "spring":
+      return {
+        hidden: { opacity: 0, scale: 0.75, y: 20 },
+        visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 18 } },
+      };
+    case "stagger":
+      return {
+        hidden: { opacity: 0, y: 24 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+      };
+    case "none":
+    default:
+      return { hidden: {}, visible: {} };
+  }
+}
+
+function AnimatedSection({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style: AnimationStyleId;
+}) {
+  if (style === "none") return <>{children}</>;
+  return (
+    <motion.div variants={getSectionVariants(style)}>
+      {children}
+    </motion.div>
+  );
+}
 
 // ─── Token helpers ───────────────────────────────────────────────────────────
 
@@ -832,12 +894,14 @@ export function VirtualWorkspace({
   goal,
   fontPairing,
   mustHaves,
+  animationStyle = "slide-up",
 }: {
   palette: Palette | undefined;
   layout: LayoutTemplate | undefined;
   goal: Goal | undefined;
   fontPairing: FontPairing | undefined;
   mustHaves: TemplateBuilderMustHave[];
+  animationStyle?: AnimationStyleId;
 }) {
   const tokens: Tokens = palette?.tokens ?? {
     primary: "#22d3ee",
@@ -873,18 +937,42 @@ export function VirtualWorkspace({
   if (!goal) return <WorkspaceEmpty />;
 
   const layoutType = layout?.type ?? "landing";
+  const transitionKey = `${goal.id}-${layout?.id ?? "none"}-${palette?.id ?? "none"}`;
+  const useStagger = animationStyle === "stagger";
+
+  const wrapper = (children: React.ReactNode) =>
+    animationStyle === "none" ? (
+      <div key={transitionKey}>{children}</div>
+    ) : (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={transitionKey}
+          variants={useStagger ? containerVariants : undefined}
+          initial={useStagger ? "hidden" : { opacity: 0 }}
+          animate={useStagger ? "visible" : { opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={useStagger ? undefined : { duration: 0.3 }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    );
+
+  const section = (children: React.ReactNode) => (
+    <AnimatedSection style={animationStyle}>{children}</AnimatedSection>
+  );
 
   if (layoutType === "dashboard" || layoutType === "app" || layoutType === "exam") {
-    return <DashboardWorkspace tokens={tokens} fonts={fonts} content={content} />;
+    return wrapper(section(<DashboardWorkspace tokens={tokens} fonts={fonts} content={content} />));
   }
 
   if (layoutType === "content") {
-    return <ContentWorkspace tokens={tokens} fonts={fonts} content={content} />;
+    return wrapper(section(<ContentWorkspace tokens={tokens} fonts={fonts} content={content} />));
   }
 
   if (layoutType === "commerce") {
-    return <CommerceWorkspace tokens={tokens} fonts={fonts} content={content} mustHaves={mustHaves} />;
+    return wrapper(section(<CommerceWorkspace tokens={tokens} fonts={fonts} content={content} mustHaves={mustHaves} />));
   }
 
-  return <LandingWorkspace tokens={tokens} fonts={fonts} content={content} mustHaves={mustHaves} />;
+  return wrapper(section(<LandingWorkspace tokens={tokens} fonts={fonts} content={content} mustHaves={mustHaves} />));
 }

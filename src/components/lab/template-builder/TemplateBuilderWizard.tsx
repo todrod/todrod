@@ -35,6 +35,18 @@ import type {
   TemplateBuilderMustHave,
 } from "@/lib/templateBuilder/types";
 
+const animationStyles = [
+  { id: "none",        label: "None — Static" },
+  { id: "fade",        label: "Fade In" },
+  { id: "slide-up",    label: "Slide Up" },
+  { id: "slide-right", label: "Slide Right" },
+  { id: "scale",       label: "Scale In" },
+  { id: "stagger",     label: "Stagger — Cascade" },
+  { id: "spring",      label: "Spring Bounce" },
+] as const;
+
+export type AnimationStyleId = (typeof animationStyles)[number]["id"];
+
 const mustHaveOptions: Array<{ id: TemplateBuilderMustHave; label: string; icon: string }> = [
   { id: "booking", label: "Booking", icon: "📅" },
   { id: "pricing", label: "Pricing", icon: "💳" },
@@ -187,6 +199,7 @@ export function TemplateBuilderWizard() {
   const [paletteId, setPaletteId] = useState<string>(() => init.paletteId);
   const [fontPairingId, setFontPairingId] = useState<string>(() => getDefaultFontPairing(init.goalId).id);
   const [uiStyleId, setUiStyleId] = useState<string>(() => getDefaultUIStyle(init.goalId).id);
+  const [animationStyleId, setAnimationStyleId] = useState<AnimationStyleId>("slide-up");
   const [brief, setBrief] = useState<TemplateBrief>(() => getInitialBrief());
   const [savedDrafts, setSavedDrafts] = useState(() => getInitialDrafts());
   const [favorites, setFavorites] = useState<TemplateFavorite[]>(() =>
@@ -520,6 +533,16 @@ export function TemplateBuilderWizard() {
             )}
           </div>
 
+          {/* Animation */}
+          <div className="mb-4">
+            <SectionLabel>Animation Style</SectionLabel>
+            <StyledSelect value={animationStyleId} onChange={(v) => setAnimationStyleId(v as AnimationStyleId)}>
+              {animationStyles.map((a) => (
+                <option key={a.id} value={a.id}>{a.label}</option>
+              ))}
+            </StyledSelect>
+          </div>
+
           <Divider />
 
           {/* Idea Notes */}
@@ -739,6 +762,7 @@ export function TemplateBuilderWizard() {
             goal={goal}
             fontPairing={fontPairing}
             mustHaves={brief.mustHaves}
+            animationStyle={animationStyleId}
           />
         </div>
       </div>
