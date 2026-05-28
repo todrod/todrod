@@ -49,7 +49,7 @@ jobs:
           echo "DEPLOY_PORT=$PORT" >> "$GITHUB_ENV"
           echo "DEPLOY_APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
           echo "DEPLOY_APP_PORT=$APP_PORT" >> "$GITHUB_ENV"
-          echo "DEPLOY_APP_NAME=todrod-site" >> "$GITHUB_ENV"
+          echo "DEPLOY_APP_NAME=todrod" >> "$GITHUB_ENV"
 
       - name: Prepare SSH
         env:
@@ -119,6 +119,7 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
 
+          pm2 delete todrod-site >/dev/null 2>&1 || true
           pm2 delete "$DEPLOY_APP_NAME" >/dev/null 2>&1 || true
           pm2 start /usr/bin/npm --name "$DEPLOY_APP_NAME" --cwd "$DEPLOY_APP_PATH" -- run start -- --port "$DEPLOY_APP_PORT"
           pm2 save
