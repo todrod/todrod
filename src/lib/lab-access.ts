@@ -1,4 +1,4 @@
-import { cardiopaHref, cathBootcampHref, echoBootcampHref, festivalAppAdminHref, festivalAppHref, hablaHref, heartToHeartHref, tcaLabHref } from "@/lib/urls";
+import { cardiopaHref, cathBootcampHref, echoBootcampHref, festivalAppAdminHref, festivalAppHref, hablaHref, heartToHeartHref, pulseHref, tcaLabHref } from "@/lib/urls";
 
 export type LabAccessKey =
   | "echo-bootcamp"
@@ -9,6 +9,7 @@ export type LabAccessKey =
   | "festival-app"
   | "festival-admin"
   | "cardio-pa"
+  | "pulse"
   | "habla";
 
 type LabAccessConfig = {
@@ -68,6 +69,12 @@ export const labAccessConfig: Record<LabAccessKey, LabAccessConfig> = {
     description: "Enter password to open the CardioAuth Prior Authorization Assistant.",
     password: "cardio",
     redirectTo: cardiopaHref,
+  },
+  pulse: {
+    title: "PulseAuth Access",
+    description: "Enter password to open the PulseAuth dashboard.",
+    password: "cardio",
+    redirectTo: pulseHref,
   },
   "habla": {
     title: "Habla Access",

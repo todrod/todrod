@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { formatDate } from "@/lib/site-utils";
 import { getLabAccessPath } from "@/lib/lab-access";
+import { cardiopaRepoHref, familyReunionHref, pulseRepoHref } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -112,7 +113,7 @@ export default function LabPage() {
         <Card className="overflow-hidden border-blue-300/30 bg-blue-500/10">
           <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-blue-950/80 to-indigo-950/80">
             <div className="flex flex-col items-center gap-2">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black text-white" style={{ background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)", boxShadow: "0 4px 20px rgba(37,99,235,0.5)" }}>♥</div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-black text-white" style={{ background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)", boxShadow: "0 4px 20px rgba(37,99,235,0.5)" }}>PA</div>
               <span className="text-sm font-semibold text-blue-200">CardioAuth</span>
             </div>
           </div>
@@ -120,10 +121,38 @@ export default function LabPage() {
             <CardTitle className="text-base">CardioAuth PA Assistant</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-zinc-200">AI-powered prior authorization workflow for cardiology — from patient intake to submission-ready PA letters.</p>
-            <Button asChild size="sm" className="bg-blue-500 text-white hover:bg-blue-400">
-              <Link href="https://cardio-pa-todrods-projects.vercel.app" target="_blank" rel="noopener noreferrer">Open CardioAuth</Link>
-            </Button>
+            <p className="text-sm text-zinc-200">AI-powered prior authorization workflow for cardiology, from patient intake to submission-ready PA letters.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-blue-500 text-white hover:bg-blue-400">
+                <Link href={getLabAccessPath("cardio-pa")}>Open CardioAuth</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                <Link href={cardiopaRepoHref} target="_blank" rel="noopener noreferrer">Repo</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border-sky-300/30 bg-sky-500/10">
+          <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-sky-950/80 to-cyan-950/80">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-black text-white" style={{ background: "linear-gradient(135deg, #0284c7 0%, #0891b2 100%)", boxShadow: "0 4px 20px rgba(14,165,233,0.45)" }}>P</div>
+              <span className="text-sm font-semibold text-sky-200">PulseAuth</span>
+            </div>
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Pulse</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Updated Pulse repo version of the cardiology PA workspace, with clinical tools and AI-assisted authorization support.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-sky-500 text-white hover:bg-sky-400">
+                <Link href={getLabAccessPath("pulse")}>Open Pulse</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                <Link href={pulseRepoHref} target="_blank" rel="noopener noreferrer">Repo</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -144,6 +173,27 @@ export default function LabPage() {
                 <Link href={getLabAccessPath("habla")}>Open Habla</Link>
               </Button>
               <Badge variant="outline" className="border-emerald-400/40 text-emerald-300 text-xs self-center">Invite only</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border-orange-300/30 bg-orange-500/10">
+          <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-orange-950/80 to-amber-950/80">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-3xl" style={{ background: "linear-gradient(135deg, #f97316 0%, #d97706 100%)", boxShadow: "0 4px 20px rgba(249,115,22,0.5)" }}>🎉</div>
+              <span className="text-sm font-semibold text-orange-200">Family Reunion</span>
+            </div>
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Family Reunion Planner</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-zinc-200">Private planning hub for the family reunion — room requests, attendance tracker, and real-time updates for all branches.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-orange-500 text-white hover:bg-orange-400">
+                <Link href={familyReunionHref} target="_blank" rel="noopener noreferrer">Open Planner</Link>
+              </Button>
+              <Badge variant="outline" className="border-orange-400/40 text-orange-300 text-xs self-center">Family only</Badge>
             </div>
           </CardContent>
         </Card>

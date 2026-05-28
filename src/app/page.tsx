@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
 import { getLabAccessPath } from "@/lib/lab-access";
+import { pulseRepoHref } from "@/lib/urls";
 
 export default function HomePage() {
   return (
@@ -149,6 +150,29 @@ export default function HomePage() {
               <Button asChild size="sm" className="bg-pink-400 text-slate-950 hover:bg-pink-300">
                 <Link href={getLabAccessPath("festival-app")}>Open App</Link>
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden border-sky-300/30 bg-sky-500/10">
+            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-sky-950/80 to-cyan-950/80">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-black text-white" style={{ background: "linear-gradient(135deg, #0284c7 0%, #0891b2 100%)", boxShadow: "0 4px 20px rgba(14,165,233,0.45)" }}>P</div>
+                <span className="text-sm font-semibold text-sky-200">PulseAuth</span>
+              </div>
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Pulse</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-zinc-200">Updated Pulse repo version of the cardiology PA workspace, with clinical tools and AI-assisted authorization support.</p>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="sm" className="bg-sky-500 text-white hover:bg-sky-400">
+                  <Link href={getLabAccessPath("pulse")}>Open Pulse</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="border-white/20 bg-black/20">
+                  <Link href={pulseRepoHref} target="_blank" rel="noopener noreferrer">Repo</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

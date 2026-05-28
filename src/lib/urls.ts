@@ -23,7 +23,19 @@ export const festivalAppRepoHref =
   process.env.NEXT_PUBLIC_FESTIVAL_APP_REPO_URL ?? "https://github.com/todrod/festivalapp";
 
 export const cardiopaHref =
-  process.env.NEXT_PUBLIC_CARDIO_PA_URL ?? "https://cardio-pa-todrods-projects.vercel.app";
+  process.env.NEXT_PUBLIC_CARDIO_PA_URL ?? "https://cardio-pa-todrods-projects.vercel.app/dashboard";
+
+export const cardiopaRepoHref =
+  process.env.NEXT_PUBLIC_CARDIO_PA_REPO_URL ?? "https://github.com/todrod/cardio-pa";
+
+export const pulseHref =
+  process.env.NEXT_PUBLIC_PULSE_URL ?? "https://cardio-pa-todrods-projects.vercel.app/dashboard";
+
+export const pulseRepoHref =
+  process.env.NEXT_PUBLIC_PULSE_REPO_URL ?? "https://github.com/todrod/pulse";
 
 export const hablaHref =
   process.env.NEXT_PUBLIC_HABLA_URL ?? "https://habla.todrod.com";
+
+export const familyReunionHref =
+  process.env.NEXT_PUBLIC_FAMILY_REUNION_URL ?? "https://reunion.todrod.com";
