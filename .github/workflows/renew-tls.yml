@@ -1,0 +1,78 @@
+name: Renew VPS TLS certificates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Validate required secrets
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          HOST="${VPS_HOST:-}"
+          USER="${VPS_USER:-}"
+          PORT="${VPS_PORT:-22}"
+          SSH_KEY="${VPS_SSH_KEY:-}"
+
+          [ -n "$HOST" ] || { echo "Missing secret: VPS_HOST"; exit 1; }
+          [ -n "$USER" ] || { echo "Missing secret: VPS_USER"; exit 1; }
+          [ -n "$SSH_KEY" ] || { echo "Missing secret: VPS_SSH_KEY"; exit 1; }
+
+          case "$PORT" in ''|*[!0-9]*) echo "Invalid VPS_PORT"; exit 1 ;; esac
+
+          echo "DEPLOY_HOST=$HOST" >> "$GITHUB_ENV"
+          echo "DEPLOY_USER=$USER" >> "$GITHUB_ENV"
+          echo "DEPLOY_PORT=$PORT" >> "$GITHUB_ENV"
+
+      - name: Prepare SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+
+          : > ~/.ssh/known_hosts
+          if [ -n "${VPS_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 15 -t ed25519,rsa -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Renew certificates and reload nginx
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/vps_key -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s" <<'EOF_REMOTE'
+          set -euo pipefail
+
+          as_root() {
+            if [ "$(id -u)" -eq 0 ]; then
+              "$@"
+            else
+              sudo -n "$@"
+            fi
+          }
+
+          command -v certbot >/dev/null || {
+            echo "certbot is not installed on this VPS"
+            exit 1
+          }
+
+          as_root certbot certificates || true
+          as_root certbot renew --non-interactive --force-renewal --cert-name todrod.com
+          as_root nginx -t
+          as_root systemctl reload nginx
+          as_root certbot certificates
+          EOF_REMOTE
