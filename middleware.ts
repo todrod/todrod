@@ -1,8 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getLabAccessCookieName } from "@/lib/lab-access";
 
-const protectedRoutes: Array<{ prefix: string; key: Parameters<typeof getLabAccessCookieName>[0] }> = [
+type ProtectedLabKey = "template-builder" | "heart-to-heart" | "festival-app";
+
+const protectedRoutes: Array<{ prefix: string; key: ProtectedLabKey }> = [
   { prefix: "/lab/template-builder", key: "template-builder" },
   { prefix: "/lab/generated", key: "template-builder" },
   { prefix: "/lab/heart-to-heart", key: "heart-to-heart" },
@@ -17,7 +18,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const cookieName = getLabAccessCookieName(rule.key);
+  const cookieName = `lab_access_${rule.key}`;
   const isAllowed = request.cookies.get(cookieName)?.value === "1";
 
   if (isAllowed) {
